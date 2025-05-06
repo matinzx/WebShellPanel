@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-3">
+        <div class="card">
+            <div class="card-header">
+                <h5>Select Server</h5>
+            </div>
+            <div class="card-body">
+                <select id="serverSelect" class="form-select">
+                    <option value="">Select a server...</option>
+                    {% for server in servers %}
+                    <option value="{{ server.id }}">{{ server.name }} ({{ server.ip }})</option>
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-9">
+        <div class="terminal-container">
+            <div id="terminal"></div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    let term = new Terminal();
+    let socket = io();
+    let currentServer = null;
+
+    term.open(document.getElementById('terminal'));
+    term.write('\r\n\x1B[1;32mWelcome to Web Terminal\x1B[0m\r\n');
+    term.write('Please select a server from the dropdown menu.\r\n');
+
+    term.onData(function(data) {
+        if (currentServer) {
+            socket.emit('execute_command', {
+                server_id: currentServer,
+                command: data
+            });
+        }
+    });
+
+    socket.on('command_output', function(data) {
+        if (data.output) {
+            term.write(data.output);
+        }
+        if (data.error) {
+            term.write('\x1B[1;31m' + data.error + '\x1B[0m');
+        }
+    });
+
+    socket.on('error', function(data) {
+        term.write('\r\n\x1B[1;31mError: ' + data.message + '\x1B[0m\r\n');
+    });
+
+    document.getElementById('serverSelect').addEventListener('change', function(e) {
+        currentServer = e.target.value;
+        term.clear();
+        if (currentServer) {
+            term.write('\r\n\x1B[1;32mConnected to server\x1B[0m\r\n');
+        } else {
+            term.write('\r\n\x1B[1;32mWelcome to Web Terminal\x1B[0m\r\n');
+            term.write('Please select a server from the dropdown menu.\r\n');
+        }
+    });
+</script>
+{% endblock %} 

@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8 text-center">
+        <h1 class="display-4 mb-4">Welcome to Web Terminal</h1>
+        <p class="lead">A secure web-based terminal for managing your Ubuntu servers.</p>
+        <div class="mt-4">
+            <a href="{{ url_for('login') }}" class="btn btn-primary btn-lg">Login to Access Terminal</a>
+        </div>
+    </div>
+</div>
+{% endblock %} 
